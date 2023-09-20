@@ -1,33 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <title>Atividade - IATS</title>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <title>ATIVIDADE - IATS</title>
 </head>
 <body>
-  <h1>Atividade - IATS</h1>
-  <form action="" method="post">
-    <input type="text" name="id" placeholder="Insira a id do gráfico (20 caracteres)">
-    <input type="submit" value="Enviar">
-  </form>
-  <?php
-  if (isset($_POST['id'])) {
-    $id = $_POST['id'];
-    $link = "https://www.chartgo.com/get.do?id=$id";
-    echo "<a href='$link'>Clique aqui para visualizar o gráfico</a>";
-  }
-  ?>
-  <script>
-    function getLink() {
-      var id = document.getElementById("id").value;
-      var link = "https://www.chartgo.com/get.do?id=" + id;
-      document.getElementById("link").href = link;
+  <h1>ATIVIDADE - IATS</h1>
+  <input type="text" id="id" placeholder="Insira sua ID">
+  <button onclick="verGrafico()">Ver gráfico</button>
 
-      if (event.type === "submit") {
-        window.location.href = document.getElementById("link").href;
-      }
+  <script>
+    function verGrafico() {
+      // Obtém o valor da ID digitada pelo usuário
+      var id = document.getElementById("id").value;
+
+      // Monta a URL do gráfico
+      var url = "https://www.chartgo.com/get.do?id=" + id;
+
+      // Redireciona o usuário para o gráfico
+      window.location.href = url;
     }
   </script>
-  <div id="link"></div>
 </body>
 </html>
