@@ -22,6 +22,10 @@
       var id = document.getElementById("id").value;
       var link = "https://www.chartgo.com/get.do?id=" + id;
       document.getElementById("link").href = link;
+
+      if (event.type === "submit") {
+        window.location.href = document.getElementById("link").href;
+      }
     }
   </script>
   <div id="link"></div>
