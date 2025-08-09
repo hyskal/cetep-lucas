@@ -1,25 +1,245 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>ATIVIDADE - IATS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de envio das fotos do diário de bordo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-field {
+            width: 60%;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .file-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-input {
+            display: inline-block;
+            padding: 10px;
+            font-size: 14px;
+            margin: 10px;
+        }
+
+        .file-status {
+            font-size: 12px;
+            color: green;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 30px;
+            color: #888;
+        }
+
+        .file-status i {
+            color: green;
+            margin-right: 5px;
+        }
+
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <h1>ATIVIDADE - IATS</h1>
-  <input type="text" id="id" placeholder="Insira sua ID">
-  <button onclick="verGrafico()">Ver gráfico</button>
 
-  <script>
-    function verGrafico() {
-      // Obtém o valor da ID digitada pelo usuário
-      var id = document.getElementById("id").value;
+    <div class="container">
+        <h1>Sistema de envio das fotos do diário de bordo</h1>
+        <p>Escolha até 6 fotos para incluir no diário de bordo.</p>
 
-      // Monta a URL do gráfico
-      var url = "https://www.chartgo.com/get.do?id=" + id;
+        <div class="form-group">
+            <label for="titulo">IDENTIFICAÇÃO:</label>
+            <input type="text" id="titulo" class="input-field" placeholder="Título do PDF (Identificação)">
+        </div>
 
-      // Redireciona o usuário para o gráfico
-      window.location.href = url;
-    }
-  </script>
+        <div class="form-group">
+            <label for="turma">Turma:</label>
+            <input type="text" id="turma" class="input-field" placeholder="Turma (Subtítulo)">
+        </div>
+
+        <form id="upload-form">
+            <div class="file-input-container">
+                <input type="file" class="file-input" id="foto1" accept="image/*">
+                <div id="status-foto1" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+
+                <input type="file" class="file-input" id="foto2" accept="image/*">
+                <div id="status-foto2" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+
+                <input type="file" class="file-input" id="foto3" accept="image/*">
+                <div id="status-foto3" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+
+                <input type="file" class="file-input" id="foto4" accept="image/*">
+                <div id="status-foto4" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+
+                <input type="file" class="file-input" id="foto5" accept="image/*">
+                <div id="status-foto5" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+
+                <input type="file" class="file-input" id="foto6" accept="image/*">
+                <div id="status-foto6" class="file-status"><i class="fas fa-check-circle"></i> Arquivo selecionado</div>
+            </div>
+        </form>
+
+        <div class="form-group">
+            <button class="button" id="gerar-pdf">Gerar PDF</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 Sistema Diário de Bordo. Todos os direitos reservados.
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script>
+        // Função para enviar imagem para o Imgbb e obter o link
+        function uploadImageToImgbb(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            return fetch('https://api.imgbb.com/1/upload?key=f9591cd104f8f8d63b70608ea95da7d8', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                return data.data.url; // URL da imagem hospedada
+            })
+            .catch(error => {
+                console.error('Erro no upload da imagem:', error);
+            });
+        }
+
+        // Função para exibir o ícone de OK quando um arquivo for selecionado
+        function showFileStatus(fileInputId, statusId) {
+            const fileInput = document.getElementById(fileInputId);
+            const statusDiv = document.getElementById(statusId);
+
+            if (fileInput.files.length > 0) {
+                statusDiv.style.display = 'inline-block';
+            } else {
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        // Adiciona eventos para mostrar o status de seleção das fotos
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const id = this.id;
+                const statusId = 'status-' + id;
+                showFileStatus(id, statusId);
+            });
+        });
+
+        document.getElementById('gerar-pdf').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Obter dados do formulário
+            const titulo = document.getElementById('titulo').value;
+            const turma = document.getElementById('turma').value;
+
+            // Adicionar título e subtítulo
+            doc.setFontSize(14);
+            doc.text(titulo, 105, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(turma, 105, 30, { align: 'center' });
+
+            // Função para adicionar imagem ao PDF
+            function addImageToPDF(imgData, x, y) {
+                doc.addImage(imgData, 'JPEG', x, y, 60, 60);  // Ajustando o tamanho da imagem
+            }
+
+            // Coletando as imagens e enviando para o Imgbb
+            const fotos = [];
+            const files = [];
+            for (let i = 1; i <= 6; i++) {
+                const fotoInput = document.getElementById('foto' + i);
+                if (fotoInput.files.length > 0) {
+                    const file = fotoInput.files[0];
+                    files.push(file);
+                }
+            }
+
+            // Realiza o upload das imagens para o Imgbb e aguarda as URLs
+            Promise.all(files.map(file => uploadImageToImgbb(file)))
+                .then(urls => {
+                    let x = 10;
+                    let y = 40;
+                    urls.forEach((url, index) => {
+                        if (index === 3) {
+                            x = 10;
+                            y = 100;
+                        }
+                        addImageToPDF(url, x, y);
+                        x += 70;  // Mudando a posição horizontal das imagens
+                    });
+
+                    // Adicionar data e hora no rodapé
+                    const dataHora = new Date();
+                    doc.setFontSize(8);
+                    doc.text(`Gerado em: ${dataHora.toLocaleString()}`, 105, 280, { align: 'center' });
+
+                    // Salvar PDF
+                    doc.save('diario_de_bordo.pdf');
+                })
+                .catch(error => {
+                    console.error('Erro ao gerar o PDF:', error);
+                });
+        });
+    </script>
+
 </body>
 </html>
